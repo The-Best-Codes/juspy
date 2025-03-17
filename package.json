@@ -1,23 +1,25 @@
 {
-	"name": "polycompiler",
-	"version": "1.0.0",
-	"description": "Merge Python and JS code into one file that can be run in both languages.",
-	"license": "GPL-3.0-only",
-	"author": "",
-	"type": "module",
-	"bin": {
-		"polycompiler": "bin/merge.js"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/EvanZhouDev/polycompiler.git"
-	},
-	"homepage": "https://github.com/EvanZhouDev/polycompiler",
-	"keywords": [
-		"js",
-		"python"
-	],
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
-	}
+  "name": "juspy",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "Merge Python and JS code into a file that works in both languages",
+  "author": "The-Best-Codes",
+  "license": "MIT",
+  "bin": {
+    "pyjs": "bin/main.js",
+    "jspy": "bin/main.js",
+    "juspy": "bin/main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/The-Best-Codes/juspy.git"
+  },
+  "homepage": "https://github.com/The-Best-Codes/juspy",
+  "keywords": [
+    "javascript",
+    "python",
+    "polyglot",
+    "js",
+    "multi-language"
+  ]
 }
