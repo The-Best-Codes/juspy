@@ -19,7 +19,7 @@ async function main() {
 
   const file1Path = args[0];
   const file2Path = args[1];
-  const outputPath = args[2] || "out/result.py.js";
+  const outputPath = args[2] || "out.py.js";
 
   console.log(`Input File 1: ${file1Path}`);
   console.log(`Input File 2: ${file2Path}`);
@@ -83,9 +83,50 @@ async function main() {
   console.log(`Merged files written to ${outputPath}`);
 }
 
+function removeMultilineComments(pythonContent) {
+  let inTripleSingleQuotes = false;
+  let inTripleDoubleQuotes = false;
+  let result = "";
+  for (let i = 0; i < pythonContent.length; i++) {
+    const char = pythonContent[i];
+
+    if (
+      char === "'" &&
+      pythonContent[i + 1] === "'" &&
+      pythonContent[i + 2] === "'"
+    ) {
+      if (!inTripleDoubleQuotes) {
+        inTripleSingleQuotes = !inTripleSingleQuotes;
+        i += 2; // Skip the next two characters
+        continue;
+      }
+    }
+
+    if (
+      char === '"' &&
+      pythonContent[i + 1] === '"' &&
+      pythonContent[i + 2] === '"'
+    ) {
+      if (!inTripleSingleQuotes) {
+        inTripleDoubleQuotes = !inTripleDoubleQuotes;
+        i += 2; // Skip the next two characters
+        continue;
+      }
+    }
+
+    if (!inTripleSingleQuotes && !inTripleDoubleQuotes) {
+      result += char;
+    }
+  }
+
+  return result;
+}
+
 function mergeFiles(pythonContent, jsContent) {
+  const cleanedPythonContent = removeMultilineComments(pythonContent);
+
   // Escape backslashes first, then newlines, then quotes
-  const escapedPythonContent = pythonContent
+  const escapedPythonContent = cleanedPythonContent
     .replace(/\\/g, "\\\\") // Double backslashes first
     .replace(/\n/g, "\\n") // Escape newlines
     .replace(/"/g, '\\"'); // Escape double quotes

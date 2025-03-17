@@ -1,7 +1,7 @@
 {
   "name": "juspy",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Merge Python and JS code into a file that works in both languages",
   "author": "The-Best-Codes",
   "license": "MIT",
