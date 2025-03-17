@@ -83,61 +83,29 @@ async function main() {
   console.log(`Merged files written to ${outputPath}`);
 }
 
-function removeMultilineComments(pythonContent) {
-  let inTripleSingleQuotes = false;
-  let inTripleDoubleQuotes = false;
-  let result = "";
-  for (let i = 0; i < pythonContent.length; i++) {
-    const char = pythonContent[i];
-
-    if (
-      char === "'" &&
-      pythonContent[i + 1] === "'" &&
-      pythonContent[i + 2] === "'"
-    ) {
-      if (!inTripleDoubleQuotes) {
-        inTripleSingleQuotes = !inTripleSingleQuotes;
-        i += 2; // Skip the next two characters
-        continue;
-      }
-    }
-
-    if (
-      char === '"' &&
-      pythonContent[i + 1] === '"' &&
-      pythonContent[i + 2] === '"'
-    ) {
-      if (!inTripleSingleQuotes) {
-        inTripleDoubleQuotes = !inTripleDoubleQuotes;
-        i += 2; // Skip the next two characters
-        continue;
-      }
-    }
-
-    if (!inTripleSingleQuotes && !inTripleDoubleQuotes) {
-      result += char;
-    }
-  }
-
-  return result;
-}
-
 function mergeFiles(pythonContent, jsContent) {
-  const cleanedPythonContent = removeMultilineComments(pythonContent);
+  // Escape Python content for inclusion in a Python exec('''...''') call
+  const escapedPythonForExec = pythonContent
+    .replace(/\\/g, "\\\\") // Escape backslashes for JS
+    .replace(/'/g, "\\'") // Escape single quotes for Python
+    .replace(/"/g, '\\"'); // Escape double quotes for JS
 
-  // Escape backslashes first, then newlines, then quotes
-  const escapedPythonContent = cleanedPythonContent
-    .replace(/\\/g, "\\\\") // Double backslashes first
-    .replace(/\n/g, "\\n") // Escape newlines
-    .replace(/"/g, '\\"'); // Escape double quotes
+  // Wrap the Python content in exec('''...''')
+  const execPythonCode = `exec('''${escapedPythonForExec}''')`;
 
-  // Escape backslashes first, then newlines, then quotes
+  // Escape the execPythonCode for embedding in a JS string
+  const escapedExecPythonCode = execPythonCode
+    .replace(/\\/g, "\\\\")
+    .replace(/\n/g, "\\n")
+    .replace(/"/g, '\\"');
+
+  // Escape JS content as before
   const escapedJsContent = jsContent
-    .replace(/\\/g, "\\\\") // Double backslashes first
-    .replace(/\n/g, "\\n") // Escape newlines
-    .replace(/"/g, '\\"'); // Escape double quotes
+    .replace(/\\/g, "\\\\")
+    .replace(/\n/g, "\\n")
+    .replace(/"/g, '\\"');
 
-  return `eval(["${escapedJsContent}", "${escapedPythonContent}" ][(-1 % 2 + 1) >> 1])`;
+  return `eval(["${escapedJsContent}", "${escapedExecPythonCode}" ][(-1 % 2 + 1) >> 1])`;
 }
 
 main().catch((err) => {
