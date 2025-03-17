@@ -2,28 +2,23 @@
 
 import fs from "fs/promises";
 import path from "path";
+import { program } from "commander";
 
 async function main() {
-  const args = process.argv.slice(2);
+  program
+    .name("juspy")
+    .version("0.0.4")
+    .description(
+      "Merges Python and JavaScript files into a single file that Node and Python can run.",
+    )
+    .argument("<file1>", "Path to the first file (Python or JavaScript)")
+    .argument("<file2>", "Path to the second file (Python or JavaScript)")
+    .argument("[output]", "Path to the output file", "out.py.js")
+    .parse(process.argv);
 
-  if (args.length < 2) {
-    console.error("Usage: juspy <file1> <file2> [output-file]");
-    console.log(
-      "Merges Python and JavaScript files into a single JavaScript file.",
-    );
-    console.log(
-      "The merged file attempts to execute either Python or JavaScript based on a simple condition.",
-    );
-    process.exit(1);
-  }
-
-  const file1Path = args[0];
-  const file2Path = args[1];
-  const outputPath = args[2] || "out.py.js";
-
-  console.log(`Input File 1: ${file1Path}`);
-  console.log(`Input File 2: ${file2Path}`);
-  console.log(`Output File: ${outputPath}`);
+  const file1Path = program.args[0];
+  const file2Path = program.args[1];
+  const outputPath = program.args[2];
 
   // Check if files exist
   try {
@@ -45,10 +40,14 @@ async function main() {
   const hasPython = isPython(ext1) || isPython(ext2);
   const hasJS = isJavaScript(ext1) || isJavaScript(ext2);
 
-  if (!(hasPython || hasJS)) {
-    console.warn(`Warning: Invalid file extensions detected.`);
+  if (!hasPython && !hasJS) {
+    console.warn(
+      `Warning: Both input files have unsupported file extensions. Expected at least one .py or .js file.`,
+    );
   } else if (!(hasPython && hasJS)) {
-    console.warn("Warning: Invalid file extension detected.");
+    console.warn(
+      `Warning: One of the files has an unsupported extension. Please provide one Python and one JavaScript file.`,
+    );
   }
 
   // Read file contents
@@ -57,21 +56,33 @@ async function main() {
 
   // Determine which file is Python and which is JavaScript
   let pythonContent, jsContent;
+  let pythonFile, jsFile;
+
   if (isPython(ext1)) {
     pythonContent = content1;
     jsContent = content2;
+    pythonFile = path.basename(file1Path);
+    jsFile = path.basename(file2Path);
   } else if (isPython(ext2)) {
     pythonContent = content2;
     jsContent = content1;
+    pythonFile = path.basename(file2Path);
+    jsFile = path.basename(file1Path);
   } else if (isJavaScript(ext1)) {
     jsContent = content1;
     pythonContent = content2;
+    jsFile = path.basename(file1Path);
+    pythonFile = path.basename(file2Path);
   } else {
     jsContent = content2;
     pythonContent = content1;
+    jsFile = path.basename(file2Path);
+    pythonFile = path.basename(file1Path);
   }
 
-  // Call the merge function (to be defined by the user)
+  console.log(`Merging ${jsFile} and ${pythonFile} into ${outputPath}...`);
+
+  // Call the merge function
   const merged = mergeFiles(pythonContent, jsContent);
 
   // Ensure the output directory exists
@@ -80,7 +91,7 @@ async function main() {
 
   // Write the result to the output file
   await fs.writeFile(outputPath, merged);
-  console.log(`Merged files written to ${outputPath}`);
+  console.log(`Merged files written to ${outputPath}.`);
 }
 
 function mergeFiles(pythonContent, jsContent) {
