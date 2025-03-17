@@ -88,7 +88,7 @@ function mergeFiles(pythonContent, jsContent) {
   const escapedPythonContent = pythonContent
     .replace(/\\/g, "\\\\") // Double backslashes first
     .replace(/\n/g, "\\n") // Escape newlines
-    .replace(/"""/g, '\\"\\"\\"'); // Escape triple quotes
+    .replace(/"/g, '\\"'); // Escape double quotes
 
   // Escape backslashes first, then newlines, then quotes
   const escapedJsContent = jsContent
